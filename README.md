@@ -2,7 +2,7 @@
 
 A Poké Radar for Pokémon SDK, in the style of Diamond / Pearl / Platinum and X / Y. Use it in the grass to make a few patches rustle, walk into one to battle the Pokémon hiding there, and chain battles against the same species to raise your shiny odds.
 
-- **Version:** 1.0.0.0
+- **Version:** 1.0.1.0
 - **Author:** ralandel
 - **Dependencies:** none
 
@@ -54,7 +54,8 @@ Each patch rolls for shiny on its own (see [Chain and shiny odds](#chain-and-shi
 
 ### Encounters while the radar is active
 
-- **Walking into a patch** starts a wild battle with a Pokémon from the matching group, exactly like a normal grass encounter (same levels, forms, abilities, Repel…).
+- **Walking into a patch** starts a wild battle with a Pokémon from the matching group, exactly like a normal grass encounter (same levels, forms, abilities…).
+- **Repel doesn't stop patch encounters** (`IGNORE_REPEL`), like in DPPt. Weaker Pokémon can still come out of a patch, so the chained species is never filtered out. Random encounters are still affected by Repel, which makes it a good way to chain safely.
 - **Random encounters are blocked** while walking inside the area that was on screen when the radar was used (`SAFE_STATES`). When running or cycling, a random Pokémon can still show up, and that breaks the chain.
 
 ### The chain
@@ -199,6 +200,7 @@ The default values live in `000 Config.rb`:
 | `BREAK_CHAIN_ON_LEAVING_ZONE`     | `true`  | Whether leaving the on-screen area breaks the chain |
 | `BREAK_CHAIN_ON_LEAVING_GRASS`    | `true`  | Whether stepping out of the grass breaks the chain |
 | `SAFE_STATES`                     | `%i[walking swamp]` | Player states during which random encounters are blocked in the area (`[]` = never blocked) |
+| `IGNORE_REPEL`                    | `true`  | Patch encounters ignore Repel (random encounters are still affected) |
 | `AUTO_RESCAN_AFTER_BATTLE`        | `true`  | Use the radar again after a won battle or a capture |
 | `CHAIN_CONTINUE_CHANCE`           | `{ weak: 50, strong: 85, shiny: 100 }` | % chance for each kind of patch to give the chained species |
 | `KIND_WEIGHTS`                    | `{ weak: 75, strong: 25 }` | Draw weights of the regular patches |
@@ -321,6 +323,7 @@ The plugin hooks into the engine with `prepend` only:
 - `PFM::Wild_Battle#group_encounter_detected?`
 - `PFM::Wild_Battle#setup`
 - `PFM::Wild_Battle#select_creature`
+- `PFM::Wild_Battle#remaining_battle_available?` and `#repel_active?` (changed only during a patch encounter)
 - `Battle::Logic::BattleEndHandler#process`
 - `Yuki::Particle_Object`: one new method, `update_poke_radar_flow`
 - `Interpreter`: the event script calls above
@@ -341,6 +344,11 @@ The plugin hooks into the engine with `prepend` only:
 ---
 
 ## Changelog
+
+### 1.0.1.0
+
+- **Fixed:** an active Repel stopped the battle from starting when walking into a patch, and could prevent the chained species from being picked. Patch encounters now ignore Repel, like in DPPt. Random encounters are still affected.
+- **Added:** `IGNORE_REPEL` setting (default `true`).
 
 ### 1.0.0.0
 
